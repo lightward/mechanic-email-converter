@@ -2,7 +2,7 @@
 
 Paste in Shopify email templates, get back Mechanic email tempaltes.
 
-Learn about Mechanic templats [here](https://learn.mechanic.dev/platform/email/templates).
+Learn about Mechanic templates [here](https://learn.mechanic.dev/platform/email/templates).
 
 
 Check out the tool online at: [https://convert.mechanic.dev](https://convert.mechanic.dev)
