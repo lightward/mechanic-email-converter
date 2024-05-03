@@ -49,6 +49,10 @@ function App() {
     .then((r) => r.text())
     .then((text) => {
       mechanicTemplate = text + shopifyTemplate;
+      mechanicTemplate = mechanicTemplate.replace(
+        /line \| img_url/g,
+        "line.image | img_url"
+      );
       setMechanicTemplate(mechanicTemplate);
     });
 
