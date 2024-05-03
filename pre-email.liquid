@@ -1,0 +1,124 @@
+{% assign id = order.id %}
+{% assign email = order.email %}
+{% assign name = order.name %}
+{% assign order_name = order.name %}
+{% assign order_number = order.number %}
+{% assign confirmation_number = order.confirmation_number %}
+
+{% assign created_at = order.created_at | date: "%B %d, %Y" %}
+{% assign payment_terms = order.payment_terms %}
+{% assign tags = order.tags | split: ", " %}
+
+{% capture transactions_json %}
+[
+  {
+    "status": "success",
+    "kind": "sale",
+    "amount": {{ order.current_total_price | times: 100 }}
+  }
+] 
+{% endcapture %}
+{% assign transactions = transactions_json | parse_json %}
+
+{% comment %} TODO
+     transaction.payment_details
+{% endcomment %}
+
+{% assign tax_price = order.total_tax | times: 100 %}
+
+{% comment %} TODO   
+    tax_lines
+    tax_line.title
+    tax_line.price
+    tax_line.rate
+    tax_line.rate_percentage
+{% endcomment %}
+
+{% assign customer = order.customer %}
+{% capture billing_address %}
+  {{ order.billing_address.first_name }} {{ order.billing_address.last_name }}
+  {{ order.billing_address.address1 }}
+  {{ order.billing_address.address2 }}
+  <br/>{{ order.billing_address.city }}, {{ order.billing_address.province_code }} {{ order.billing_address.zip }}
+  {{ order.billing_address.country }}
+{% endcapture %}
+{% assign subtotal_price = order.subtotal_price | times: 100 %}
+
+{% comment %} TODO   
+    discounts 
+    discounts_amount
+    discounts_savings
+    total_price
+    financial_status
+{% endcomment %}
+
+{% assign requires_shipping = false %}
+{% for line_item in order.line_items %}
+  {% if line_item.requires_shipping %}
+    {% assign requires_shipping = true %}
+    {% break %}
+  {% endif %}{% endfor %}
+
+{% comment %} TODO   
+    shipping_method.title
+    shipping_method.price
+{% endcomment %}
+
+{% assign shipping_price = order.total_shipping_price_set.shop_money.amount | times: 100 %}
+{% capture shipping_address %} 
+  {{ order.shipping_address.first_name }}  {{ order.shipping_address.last_name }}
+  {{ order.shipping_address.address1 }}
+  {{ order.shipping_address.address2 }}
+  <br/>{{ order.shipping_address.city }}, {{ order.shipping_address.province_code }} {{ order.shipping_address.zip }}
+  {{ order.shipping_address.country }}
+{% endcapture %}
+{% comment %} TODO
+     Not sure how original_line_price is defined
+     line_items
+{% endcomment %}
+{% capture subtotal_line_items_json %}
+[
+  {% for line_item in order.line_items %}
+    {
+      "id": "{{ line_item.id }}",
+      "title": "{{ line_item.title }}",
+      "quantity": {{ line_item.quantity }},
+      "original_line_price": {{ line_item.price | times: line_item.quantity | times: 100 }},  
+      "final_line_price": {{ line_item.price | times: line_item.quantity | times: 100 }}
+    }
+    {% unless forloop.last %},{% endunless %}
+  {% endfor %}
+]
+{% endcapture %}
+{% assign subtotal_line_items = subtotal_line_items_json | json_parse %}
+
+{% comment %} TODO   
+    note
+    attributes
+    referring_site
+    landing_site
+    landing_site_ref
+    cancelled
+    cancelled_at
+    cancel_reason
+    "has_high_risks?
+    (deprecated)"
+    unique_gateways
+    location (POS only)
+    "fulfilled_line_items
+    (deprecated)"
+    "unfulfilled_line_items
+    (deprecated)"
+    b2b?
+    customer_order_url
+{% endcomment %}
+
+{% assign company = order.company %}
+{% assign company_location = order.company.location %}
+
+{% assign po_number = order.po_number %}
+{% assign order_status_url = order.order_status_url %}
+{% assign discount_applications = order.discount_applications %}
+
+{% assign total_tip = order.total_tip_received | plus: 0 %}
+{% assign total_duties = order.current_total_duties_set.shop_money.amount %}
