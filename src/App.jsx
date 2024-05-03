@@ -83,12 +83,13 @@ function App() {
     setShopPayload(shopPayload);
   }, []);
 
-  const handleCopyButton = useCallback(() => {
+  const handleCopyButton = () => {
     navigator.clipboard.writeText(mechanicTemplate);
+    console.log("Copied to clipboard", mechanicTemplate);
     toast.success("Copied Mechanic template to clipboard", {
       duration: 2000,
     });
-  }, []);
+  };
 
   let order = "";
   try {
