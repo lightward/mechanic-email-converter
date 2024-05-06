@@ -166,7 +166,7 @@ function App() {
                       Shopify Template
                     </Text>
                     <TextField
-                      maxHeight="150px"
+                      maxHeight="400px"
                       value={shopifyTemplate}
                       onChange={handleShopifyTemplateChange}
                       multiline={8}
@@ -184,7 +184,7 @@ function App() {
                       </Text>
                     </InlineStack>
                     <TextField
-                      maxHeight="150px"
+                      maxHeight="400px"
                       disabled
                       value={mechanicTemplate}
                       multiline={8}
@@ -194,6 +194,8 @@ function App() {
                 </Card>
               </Grid.Cell>
             </Grid>
+
+            {/* Disabling the preview for now
             <Grid>
               <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 6, xl: 6 }}>
                 <Card sectioned>
@@ -240,6 +242,7 @@ function App() {
             ) : (
               ""
             )}
+          */}
           </BlockStack>
           <FooterHelp>
             This is an{" "}
