@@ -54,9 +54,18 @@ function App() {
         "line.image | img_url"
       );
       mechanicTemplate = mechanicTemplate.replace(
-        "{{ 'notifications/discounttag.png' | shopify_asset_url }}",
-        "https://cdn.shopify.com/shopifycloud/shopify/assets/themes_support/notifications/discounttag-d1f7c6d9334582b151797626a5ae244c56af0791fcd7841f21027dd44830bcc6.png"
+        /{{\s*'notifications\/discounttag\.png'\s*\|\s*shopify_asset_url\s*}}/g,
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAMAAADW3miqAAAAA3NCSVQICAjb4U/gAAAAKlBMVEVHcExzc3N0dHR0dHR0dHR7e3t0dHR7e3t0dHR0dHR0dHR0dHR0dHRzc3MVUs63AAAADXRSTlMAjICayhd2DfJHYiy6LL19dgAAAMlJREFUOI2N1FEShSAIBVAzIdTY/3Zf6ViCaO9+2hkBdXJuzBFTzIfxoUvcSjDmKcm4vUkRDAJpU/FxaKas74H4CZ1JVvLVsAx1vbVmtGHen0qtmdEwybFNw6zGNg33lYQhBEBqCLxlGO8S2JC5D3M5amjINhOkejbLDecsGs+L2d8jSF/mRvBlqN7J0nAo13KuUX12tDS+voHwh3H+D7Pa6jUOZqozUyXMRClzvc9RDcZQhhmUaZSaGKGmplMLc6nz21zBQEH/kn7VIiJnf/Ih6AAAAABJRU5ErkJggg=="
       );
+
+      /* 
+      If we don't end up getting the payment_icon_png_url filter impelmented in Mechanic, we can use this instead 
+      mechanicTemplate = mechanicTemplate.replace(
+        "transaction.payment_details.credit_card_company | payment_icon_png_url",
+        "transaction.payment_details.payment_method_image"
+      );
+      */
+
       setMechanicTemplate(mechanicTemplate);
     });
 

@@ -17,7 +17,7 @@
       "id": "{{ transaction.id }}",
       "status": "{{ transaction.status }}",
       "kind": "{{ transaction.kind }}",
-      "amount": "{{ transaction.amount | times: 100 }}",
+      "amount": "{{ transaction.amount | times: 100 }}",      
       "payment_details": {
         "credit_card_company": "{{ transaction.payment_details.credit_card_company }}",
         "credit_card_last_four_digits": "{{ transaction.payment_details.credit_card_number }}"
@@ -28,6 +28,10 @@
 ]
 {% endcapture %}
 {% assign transactions = transactions_json | parse_json %}
+
+{% comment %}
+debug transactions: {{ transactions_json }}
+{% endcomment %}
 
 {% assign tax_price = order.total_tax | times: 100 %}
 {% assign tax_lines = order.tax_lines %}
