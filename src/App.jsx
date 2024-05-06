@@ -53,6 +53,10 @@ function App() {
         /line \| img_url/g,
         "line.image | img_url"
       );
+      mechanicTemplate = mechanicTemplate.replace(
+        "{{ 'notifications/discounttag.png' | shopify_asset_url }}",
+        "https://cdn.shopify.com/shopifycloud/shopify/assets/themes_support/notifications/discounttag-d1f7c6d9334582b151797626a5ae244c56af0791fcd7841f21027dd44830bcc6.png"
+      );
       setMechanicTemplate(mechanicTemplate);
     });
 
