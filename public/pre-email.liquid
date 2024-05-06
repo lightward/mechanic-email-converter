@@ -130,7 +130,6 @@
   {% endfor %}
 ]
 {% endcapture %}
-debug line items: {{ line_items_json }}
 {% assign line_items = line_items_json | parse_json %}
 
 {% comment %}
