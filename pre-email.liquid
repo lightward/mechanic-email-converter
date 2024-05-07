@@ -1,3 +1,4 @@
+{% assign order = shop.orders[order.id] %}
 {% assign id = order.id %}
 {% assign email = order.email %}
 {% assign name = order.name %}
@@ -11,107 +12,164 @@
 
 {% capture transactions_json %}
 [
-  {
-    "status": "success",
-    "kind": "sale",
-    "amount": {{ order.current_total_price | times: 100 }}
-  }
-] 
+  {% for transaction in order.transactions %}
+    {
+      "id": "{{ transaction.id }}",
+      "status": "{{ transaction.status }}",
+      "kind": "{{ transaction.kind }}",
+      "amount": "{{ transaction.amount | times: 100 }}",      
+      "payment_details": {
+        "credit_card_company": "{{ transaction.payment_details.credit_card_company }}",
+        "credit_card_last_four_digits": "{{ transaction.payment_details.credit_card_number }}"
+      }
+    }
+    {% unless forloop.last %},{% endunless %}
+  {% endfor %}
+]
 {% endcapture %}
 {% assign transactions = transactions_json | parse_json %}
 
-{% comment %} TODO
-     transaction.payment_details
+{% comment %}
+debug transactions: {{ transactions_json }}
 {% endcomment %}
 
 {% assign tax_price = order.total_tax | times: 100 %}
-
-{% comment %} TODO   
-    tax_lines
-    tax_line.title
-    tax_line.price
-    tax_line.rate
-    tax_line.rate_percentage
-{% endcomment %}
+{% assign tax_lines = order.tax_lines %}
 
 {% assign customer = order.customer %}
 {% capture billing_address %}
   {{ order.billing_address.first_name }} {{ order.billing_address.last_name }}
-  {{ order.billing_address.address1 }}
+  <br/>{{ order.billing_address.address1 }}
   {{ order.billing_address.address2 }}
   <br/>{{ order.billing_address.city }}, {{ order.billing_address.province_code }} {{ order.billing_address.zip }}
-  {{ order.billing_address.country }}
+  <br/>{{ order.billing_address.country }}
+  
 {% endcapture %}
 {% assign subtotal_price = order.subtotal_price | times: 100 %}
 
-{% comment %} TODO   
-    discounts 
-    discounts_amount
-    discounts_savings
-    total_price
-    financial_status
-{% endcomment %}
+{% assign total_discounts = order.total_discounts | times: 100 %} 
+{% assign total_price = order.total_price | times: 100 %} 
+{% assign financial_status = order.financial_status %} 
 
 {% assign requires_shipping = false %}
 {% for line_item in order.line_items %}
   {% if line_item.requires_shipping %}
     {% assign requires_shipping = true %}
     {% break %}
-  {% endif %}{% endfor %}
+  {% endif %}
+{% endfor %}
 
-{% comment %} TODO   
-    shipping_method.title
-    shipping_method.price
-{% endcomment %}
-
-{% assign shipping_price = order.total_shipping_price_set.shop_money.amount | times: 100 %}
-{% capture shipping_address %} 
-  {{ order.shipping_address.first_name }}  {{ order.shipping_address.last_name }}
-  {{ order.shipping_address.address1 }}
-  {{ order.shipping_address.address2 }}
-  <br/>{{ order.shipping_address.city }}, {{ order.shipping_address.province_code }} {{ order.shipping_address.zip }}
-  {{ order.shipping_address.country }}
+{% capture shipping_method_json %}
+  {
+    "title": "{{ order.shipping_lines[0].code }}",
+    "price": "{{ order.shipping_lines[0].price }}"
+  }
 {% endcapture %}
-{% comment %} TODO
-     Not sure how original_line_price is defined
-     line_items
-{% endcomment %}
-{% capture subtotal_line_items_json %}
+{% assign shipping_method = shipping_method_json | parse_json %}
+
+{% capture transactions_json %}
 [
-  {% for line_item in order.line_items %}
+  {% for transaction in order.transactions %}
     {
-      "id": "{{ line_item.id }}",
-      "title": "{{ line_item.title }}",
-      "quantity": {{ line_item.quantity }},
-      "original_line_price": {{ line_item.price | times: line_item.quantity | times: 100 }},  
-      "final_line_price": {{ line_item.price | times: line_item.quantity | times: 100 }}
+      "id": "{{ transaction.id }}",
+      "status": "{{ transaction.status }}",
+      "kind": "{{ transaction.kind }}",
+      "amount": "{{ transaction.amount | times: 100 }}",
+      "payment_details": {
+        "credit_card_company": "{{ transaction.payment_details.credit_card_company }}",
+        "credit_card_last_four_digits": "{{ transaction.payment_details.credit_card_number }}"
+      }
     }
     {% unless forloop.last %},{% endunless %}
   {% endfor %}
 ]
 {% endcapture %}
-{% assign subtotal_line_items = subtotal_line_items_json | json_parse %}
+{% assign transactions = transactions_json | parse_json %}
 
-{% comment %} TODO   
-    note
-    attributes
-    referring_site
-    landing_site
-    landing_site_ref
-    cancelled
-    cancelled_at
-    cancel_reason
-    "has_high_risks?
-    (deprecated)"
-    unique_gateways
-    location (POS only)
-    "fulfilled_line_items
-    (deprecated)"
-    "unfulfilled_line_items
-    (deprecated)"
-    b2b?
-    customer_order_url
+{% assign shipping_price = order.total_shipping_price_set.shop_money.amount | times: 100 %}
+{% capture shipping_address %} 
+  {{ order.shipping_address.first_name }}  {{ order.shipping_address.last_name }}
+  <br/>{{ order.shipping_address.address1 }}
+  {{ order.shipping_address.address2 }}
+  <br/>{{ order.shipping_address.city }}, {{ order.shipping_address.province_code }} {{ order.shipping_address.zip }}
+  <br/>{{ order.shipping_address.country }}
+{% endcapture %}
+
+{% capture line_items_json %}
+[
+  {% for line_item in order.line_items %}
+    {% assign product = shop.products[line_item.product_id] %}
+    {% assign variant = shop.variants[line_item.variant_id] %}
+    {% assign variant_image = product.images | where: "id", variant.image_id | first %}
+    {% assign image = variant_image | default: product.image %}
+
+    {% assign finalPrice = line_item.price %}
+    {% for discount in line_item.discount_allocations %}
+      {% assign finalPrice = finalPrice | minus: discount.amount %}
+    {% endfor %}
+
+    {
+      "id": "{{ line_item.id }}",
+      "title": "{{ line_item.title }}",
+      "variant_id": "{{ line_item.variant_id }}",
+      "product_id": "{{ line_item.product_id }}",
+      "image": "{{ image.src }}",
+      "quantity": {{ line_item.quantity }},
+      "discount_allocations": [
+        {% for discount_allocation in line_item.discount_allocations %}
+          {
+            "amount": {{ discount_allocation.amount | times: 100 }},
+            "discount_application": {
+              "title": "", {% comment %} not available in order.line_items[].discount_allocations {% endcomment %}
+              "target_selection": "" {% comment %} not available in order.line_items[].discount_allocations {% endcomment %}
+            }
+          }
+          {% unless forloop.last %},{% endunless %}
+        {% endfor %}
+      ],
+      "original_line_price": {{ line_item.price | times: line_item.quantity | times: 100 }},  
+      "final_line_price": {{ finalPrice | times: line_item.quantity | times: 100 }}
+    }
+    {% unless forloop.last %},{% endunless %}
+  {% endfor %}
+]
+{% endcapture %}
+{% assign line_items = line_items_json | parse_json %}
+
+{% comment %}
+  TODO Exclude tip line items from subtotal_line_items
 {% endcomment %}
+{% assign subtotal_line_items = line_items %}
+
+{% assign note = order.note %}
+
+{% comment %} 
+  TODO - these variables are referenced here (https://help.shopify.com/en/manual/orders/notifications/email-variables)
+  but not used in shopify-order-confirmation.liquid 
+
+  attributes - Any attributes which were attached to the order. Example: {{ attributes.gift-note }}
+    - Are these order.note_attributes?
+  referring_site
+  landing_site
+  landing_site_ref
+  cancelled
+  cancelled_at
+  cancel_reason
+  has_high_risks (deprecated)  
+  unique_gateways
+  location (POS only)
+  fulfilled_line_items (deprecated)
+  unfulfilled_line_items (deprecated)    
+  customer_order_url
+  discounts - A list of discounts.
+  discounts_amount - Amount of the discount applied by all discounts. Example: +$5.00
+  discounts_savings - Amount of the savings caused by all discounts. Example: -$5.00
+{% endcomment %}
+
+{% assign b2b = false %}
+{% if order.company != null %}
+  {% assign b2b = true %}
+{% endif %}
 
 {% assign company = order.company %}
 {% assign company_location = order.company.location %}
